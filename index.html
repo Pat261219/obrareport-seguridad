@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ObraReport | Seguridad en Obra</title>
+<style>
+:root{--navy:#15324b;--blue:#245b82;--bg:#f2f5f8;--line:#d9e1e8;--muted:#637487}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px Arial,sans-serif;color:#1d2a36}
+header{background:var(--navy);color:white;padding:20px max(18px,calc((100% - 1100px)/2));}
+header h1{margin:0;font-size:23px;letter-spacing:.4px}header p{margin:6px 0 0;color:#d7e4ee}
+main{max-width:1100px;margin:22px auto;padding:0 14px}.toolbar,.panel{background:white;border:1px solid var(--line);border-radius:12px;padding:17px;margin-bottom:16px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button,.btn{border:0;border-radius:8px;padding:11px 15px;background:var(--blue);color:white;font-weight:600;cursor:pointer}
+button.secondary{background:#e8eef3;color:var(--navy)}button.danger{background:#a73535}
+input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5df;border-radius:7px;font:inherit;background:#fff}
+textarea{min-height:75px;resize:vertical}label{display:block;font-weight:600;font-size:13px;color:#405366;margin:10px 0 5px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.full{grid-column:1/-1}
+h2{font-size:19px;margin:0 0 12px;color:var(--navy)}h3{font-size:16px;color:var(--navy);margin:18px 0 8px}
+.item{border-top:1px solid var(--line);padding:12px 0}.item:first-of-type{border-top:0}
+.itemhead{display:flex;gap:10px;align-items:center}.itemhead strong{flex:1}
+.photos{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.photos img{width:105px;height:85px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.small{font-size:12px;color:var(--muted)}.hidden{display:none!important}
+#savedList button{margin:4px}.status{font-size:12px;color:#23633b}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.toolbar{align-items:stretch}.toolbar button{flex:1}}
+@media print{body{background:white}header{padding:12px;color:#000;background:white;border-bottom:2px solid #15324b}header p{color:#333}main{max-width:none;margin:0;padding:0}.toolbar,.no-print,.removePhoto{display:none!important}.panel{border:0;padding:8px;margin:0;break-inside:avoid}.item{break-inside:avoid}.photos img{width:130px;height:100px}input,select,textarea{border:0;padding:2px 0;appearance:none}textarea{min-height:30px}h2,h3{break-after:avoid}}
+</style>
+</head>
+<body>
+<header><h1>OBRAREPORT</h1><p>Seguridad en Obra · Grupo TRAGSA</p></header>
+<main>
+<div class="toolbar no-print">
+<button onclick="newInspection()">Nueva inspección</button>
+<button class="secondary" onclick="saveInspection()">Guardar inspección</button>
+<button class="secondary" onclick="window.print()">Generar / guardar PDF</button>
+<button class="secondary" onclick="showSaved()">Inspecciones guardadas</button>
+<span id="msg" class="status"></span>
+</div>
+<section class="panel" id="savedPanel" hidden><h2>Inspecciones guardadas en este dispositivo</h2><div id="savedList"></div><p class="small">Los datos se guardan en este navegador. Exporta el PDF y conserva una copia de seguridad; no se sincronizan automáticamente entre dispositivos.</p></section>
+<form id="inspection">
+<section class="panel"><h2>Datos identificativos</h2><div class="grid">
+<div><label>Código de obra</label><input name="codigo"></div><div><label>Nombre de la obra</label><input name="obra"></div>
+<div><label>Fecha de inspección</label><input name="fecha" type="date"></div><div><label>Técnico de PRL</label><input name="tecnico"></div>
+<div><label>Jefe de obra</label><input name="jefe"></div><div><label>Número de trabajadores</label><input name="trabajadores" type="number" min="0"></div>
+<div class="full"><label>Ubicación / GPS</label><input name="ubicacion"></div>
+</div></section>
+<div id="sections"></div>
+<section class="panel"><h2>21. Observaciones generales y firma</h2><label>Observaciones</label><textarea name="observaciones"></textarea><div class="grid"><div><label>Nombre del técnico responsable</label><input name="firma"></div><div><label>Fecha de firma</label><input name="fechaFirma" type="date"></div></div></section>
+<section class="panel"><h2>Registro de deficiencias y medidas correctoras</h2><p class="small">Añade una línea por cada deficiencia detectada. Adjunta fotografías en el apartado correspondiente.</p><div id="actions"></div><button type="button" class="secondary no-print" onclick="addAction()">Añadir deficiencia / medida</button></section>
+</form>
+</main>
+<script>
+const names=[
+"Señalización y balizamiento","Evaluación de riesgos y PSYS","Coordinación de seguridad","Libro de incidencias",
+"Subcontratación y CAE","Instalaciones de bienestar","Emergencias","Orden y limpieza","Almacenamiento y acopios",
+"Instalaciones y medios de trabajo","Equipos y accesorios","Maquinaria auxiliar","Maquinaria autopropulsada",
+"Pequeña maquinaria","Equipos de protección individual","Formación e información","Accidentes e incidentes (verificación)",
+"Deficiencias detectadas","Medidas correctoras y seguimiento"
+];
+const root=document.getElementById('sections');
+names.forEach((n,i)=>{let num=i+2;let d=document.createElement('section');d.className='panel';d.innerHTML=`<h2>${num}. ${n}</h2><div class="item"><div class="grid"><div><label>Evaluación</label><select name="s${num}_estado"><option value="">Seleccionar</option><option>CORRECTO</option><option>MEJORABLE</option><option>DEFICIENTE</option><option>NO APLICA</option></select></div><div><label>Elemento / zona revisada</label><input name="s${num}_elemento"></div><div class="full"><label>Observaciones</label><textarea name="s${num}_obs"></textarea></div><div class="full"><label>Fotografías</label><input class="no-print" type="file" accept="image/*" multiple onchange="addPhotos(this,'photos${num}')"><div class="photos" id="photos${num}"></div></div></div></div>`;root.appendChild(d)});
+function addPhotos(inp,id){const box=document.getElementById(id);[...inp.files].forEach(f=>{const r=new FileReader();r.onload=()=>{const img=document.createElement('img');img.src=r.result;img.dataset.photo='1';box.appendChild(img)};r.readAsDataURL(f)});inp.value=''}
+function addAction(data={}){const d=document.createElement('div');d.className='item action';d.innerHTML=`<div class="grid"><div><label>Deficiencia detectada</label><textarea class="a-def"></textarea></div><div><label>Medida correctora</label><textarea class="a-med"></textarea></div><div><label>Responsable</label><input class="a-res"></div><div><label>Fecha límite</label><input class="a-date" type="date"></div><div><label>Estado</label><select class="a-state"><option>PENDIENTE</option><option>EN CURSO</option><option>SUBSANADA</option></select></div><div class="no-print"><label>&nbsp;</label><button type="button" class="danger" onclick="this.closest('.action').remove()">Eliminar línea</button></div></div>`;document.getElementById('actions').appendChild(d);d.querySelector('.a-def').value=data.def||'';d.querySelector('.a-med').value=data.med||'';d.querySelector('.a-res').value=data.res||'';d.querySelector('.a-date').value=data.date||'';d.querySelector('.a-state').value=data.state||'PENDIENTE'}
+function getData(){const f=document.getElementById('inspection');const data={fields:{},photos:{},actions:[]};new FormData(f).forEach((v,k)=>data.fields[k]=v);document.querySelectorAll('.photos').forEach(box=>data.photos[box.id]=[...box.querySelectorAll('img')].map(x=>x.src));document.querySelectorAll('.action').forEach(d=>data.actions.push({def:d.querySelector('.a-def').value,med:d.querySelector('.a-med').value,res:d.querySelector('.a-res').value,date:d.querySelector('.a-date').value,state:d.querySelector('.a-state').value}));return data}
+function setData(data){document.getElementById('inspection').reset();Object.entries(data.fields||{}).forEach(([k,v])=>{const el=document.querySelector(`[name="${CSS.escape(k)}"]`);if(el)el.value=v});Object.entries(data.photos||{}).forEach(([id,arr])=>{const box=document.getElementById(id);if(box)arr.forEach(src=>{const im=document.createElement('img');im.src=src;box.appendChild(im)})});document.getElementById('actions').innerHTML='';(data.actions||[]).forEach(addAction)}
+function saveInspection(){const data=getData();const key=(data.fields.codigo||'SIN-CODIGO')+'_'+(data.fields.fecha||new Date().toISOString().slice(0,10));let all=JSON.parse(localStorage.getItem('obrareports')||'{}');all[key]=data;try{localStorage.setItem('obrareports',JSON.stringify(all));document.getElementById('msg').textContent='Inspección guardada en este dispositivo.'}catch(e){document.getElementById('msg').textContent='No hay espacio suficiente. Reduce el tamaño o número de fotografías.'}}
+function showSaved(){const p=document.getElementById('savedPanel');p.hidden=!p.hidden;if(!p.hidden){const all=JSON.parse(localStorage.getItem('obrareports')||'{}');const box=document.getElementById('savedList');box.innerHTML='';Object.keys(all).forEach(k=>{const b=document.createElement('button');b.className='secondary';b.textContent='Abrir '+k;b.onclick=()=>setData(all[k]);box.appendChild(b)})}}
+function newInspection(){if(confirm('¿Empezar una inspección nueva? Guarda antes los cambios si los necesitas.')){document.getElementById('inspection').reset();document.querySelectorAll('.photos').forEach(x=>x.innerHTML='');document.getElementById('actions').innerHTML='';document.getElementById('msg').textContent='Nueva inspección.'}}
+addAction();document.querySelector('[name=fecha]').value=new Date().toISOString().slice(0,10);
+</script>
+</body></html>

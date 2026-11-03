@@ -1,0 +1,15 @@
+OBRAREPORT – SEGURIDAD EN OBRA | GRUPO TRAGSA
+
+PUBLICACIÓN:
+1. Descomprime este ZIP en tu ordenador.
+2. En Netlify, desde el panel de proyectos, selecciona Add new project / Deploy manually (o arrastra la carpeta descomprimida a la zona de carga).
+3. Sube la carpeta que contiene index.html.
+4. Netlify publicará la web y mostrará una dirección .netlify.app.
+
+USO:
+- Nueva inspección, completar los apartados y adjuntar fotografías.
+- Guardar inspección conserva los datos en el navegador del dispositivo.
+- Generar / guardar PDF abre la impresión del navegador; selecciona "Guardar como PDF".
+
+IMPORTANTE:
+Esta primera versión guarda datos localmente en el navegador y no sincroniza entre dispositivos ni usuarios. Las fotografías se incluyen en la impresión/PDF. Para uso corporativo multiusuario será necesario añadir un servicio de base de datos y almacenamiento seguro, con control de acceso.
